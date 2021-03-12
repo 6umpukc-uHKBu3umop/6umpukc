@@ -117,6 +117,17 @@ get_user() async {
   return p.basename(await runReturnContent('whoami'));
 }
 
+get_home() {
+  if (Platform.isMacOS) {
+    return get_env('HOME');
+  } else if (Platform.isLinux) {
+    return get_env('HOME');
+  } else if (Platform.isWindows) {
+    return get_env('USERPROFILE');
+  }
+  return '/home/' + get_user();
+}
+
 die(msg) {
   print(msg);
   exit(0);
@@ -221,7 +232,17 @@ run(cmd, args, [runInShell = false]) async {
   try {
     ProcessResult result =
         await Process.run(cmd, new List<String>.from(args), environment: ENV_LOCAL, runInShell: runInShell);
-    print(result.stdout.trimRight());
+    var output = result.stdout.trimRight();
+    if (output.length > 0) {
+      print(output);
+    }
+    var errors = result.stderr.trimRight();
+    if (errors.length > 0) {
+      print('');
+      print('ERRORS:');
+      print('');
+      print(errors);
+    }
     return result.exitCode;
   } catch (e) {
     print('Error on running command:');
@@ -848,7 +869,7 @@ download_node(srcUrl, path, nodeDir) async {
 }
 
 node_path(cmd, [prefix = '']) {
-  var path = REAL_BIN + '/.dev/bin/node' + prefix;
+  var path = get_home() + '/bin/node' + prefix;
   if (!Directory(path).existsSync()) {
     die('Nodejs directory [' + path + '] - not exists.');
   }
@@ -870,7 +891,8 @@ node_path_bitrix(cmd) {
 }
 
 action_js_install([basePath = '']) async {
-  var path = REAL_BIN + '/.dev/bin';
+  var path = get_home() + '/bin';
+
   if (!Directory(path).existsSync()) {
     new Directory(path).createSync(recursive: true);
   }
@@ -1288,9 +1310,7 @@ skip_file(path) {
 }
 
 action_es9(basePath) async {
-  var compilerPath = 'google-closure-compiler';
-  await require_command(compilerPath);
-
+  var compilerPath = node_path('google-closure-compiler');
   if ((ARGV.length != 2) || !(ARGV[1] == 'all')) {
     basePath = getcwd();
   }
@@ -1321,20 +1341,23 @@ action_es9(basePath) async {
     if (!is_bx_debug()) {
       print('Processing ' + f + ' -> ' + p.basename(destFile));
     }
-    await action_conv_utf(f);
-    await run(compilerPath, ['--js', f, '--js_output_file', destFile, ...extraParams]);
     if (es9) {
-      var srcFile = destFile;
-      destFile = destFile.replaceAll('.min.js', '.js');
-      File(srcFile).copySync(destFile);
+      //TODO!!! как передавать пути к модулям
+      await action_conv_utf(f);
+      var res = await run(compilerPath, ['--js', f, '--js_output_file', destFile, ...extraParams]);
+      if ((res == 0) && File(destFile).existsSync()) {
+        var srcFile = destFile;
+        destFile = destFile.replaceAll('.min.js', '.js');
+        File(srcFile).copySync(destFile);
+      }
+    } else {
+      File(f).copySync(destFile);
     }
   });
 }
 
 action_minify(basePath) async {
-  var toolPath = REAL_BIN + '/.dev/bin/esbuild/node_modules/.bin/esbuild';
-  await require_command(toolPath);
-
+  var toolPath = node_path('esbuild');
   if ((ARGV.length != 2) || !(ARGV[1] == 'all')) {
     basePath = getcwd();
   }
