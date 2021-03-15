@@ -653,7 +653,7 @@ action_ftp(basePath) async {
     //    pclose(popen("start /B " . $path . ' "' . $connStr . '" --local="' . $basePath . '"', "r"));
   } else if (await is_ubuntu()) {
     await require_command('screen');
-    return run('screen', ['-d', '-m', 'filezilla', connStr, '--local="' + basePath + '"']);
+    return run('screen', ['-d', '-m', 'filezilla', connStr, '--local=' + basePath]);
   }
   //else {
   //	# arch - run without `screen` command
