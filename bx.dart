@@ -238,7 +238,7 @@ run(cmd, args, [runInShell = false]) async {
     var errors = result.stderr.trimRight();
     if (errors.length > 0) {
       print('');
-      print('ERRORS:');
+      print('=======');
       print('');
       print(errors);
     }
@@ -287,7 +287,7 @@ run_php(args) async {
   var phpBin = get_env('SOLUTION_PHP_BIN');
   if (phpBin == '') {
     phpBin = 'php';
-    if (!check_command(phpBin)) {
+    if (!await check_command(phpBin)) {
       //TODO!!! detect php
       //phpBin = 'C:\\Program Files (x86)\\Local\\resources\\extraResources\\lightning-services\\php-7.*\\bin\\win32\\php';
       //phpBin = 'C:\\Program Files (x86)\\Local\\resources\\extraResources\\lightning-services\\php-7.*\\bin\\win64\\php';
