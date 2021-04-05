@@ -1169,15 +1169,24 @@ action_bitrixcli_build_deps(basePath) async {
 
   var bitrixPath = basePath + '/bitrix';
   var path = getcwd();
-  var tmp = path.split('/bitrix/js/');
-  if (tmp.length == 1) {
-    tmp = path.split('/install/js/');
-  }
-  if (tmp.length == 1) {
-    tmp = path.split('/local/js/');
-    if (tmp.length != 1) {
-      bitrixPath = basePath + '/local';
-    }
+
+  var pathParts = {
+  	'/bitrix/js/': '/js/',
+  	'/install/js/': '/js/',
+  	'/local/js/': '/js/',
+  	'/bitrix/components/': '/components/',
+  	'/install/components/': '/components/',
+  	'/local/components/': '/components/',
+  };
+  var tmp = [];
+  var detectedPart;
+  for (final part in pathParts.keys) {
+  	tmp = path.split(part);
+  	if (tmp.length != 1) {
+  		bitrixPath = basePath + '/local';
+  		detectedPart = pathParts[part];
+    	break;
+	}
   }
 
   var destPath = '';
@@ -1190,17 +1199,13 @@ action_bitrixcli_build_deps(basePath) async {
     action_fixdir(path);
   } else {
     //TODO!!! нужно создавать символьные ссылки в /local/js на расширения в /bitrix/js
-    if (tmp.length > 1) {
-	    if (bitrixPath != (basePath + '/local')) {
-	      die('Extensions should be located in /local/js/... site folder.');
-	    }
-	    destPath = bitrixPath + '/js/' + tmp[1];
-	    await run(node_path_bitrix('bitrix'), ['build', '--path', destPath], true);
+    if (bitrixPath != (basePath + '/local')) {
+		die('Extensions or component should be located in /local/... site folder.');
 	}
-	else {
-		//TODO!!! ссылки для компонентов не работают - нужно копировать в local
-		//FIX for components with deps
-		await run(node_path_bitrix('bitrix'), ['build'], true);
+    if (tmp.length > 1) {
+	    destPath = bitrixPath + detectedPart + tmp[1];
+	    //TODO!!! ?если путь по destPath не существует - создавать и удалять символьную ссылку
+	    await run(node_path_bitrix('bitrix'), ['build', '--path', destPath], true);
 	}
   }
 }
