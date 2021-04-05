@@ -1190,11 +1190,18 @@ action_bitrixcli_build_deps(basePath) async {
     action_fixdir(path);
   } else {
     //TODO!!! нужно создавать символьные ссылки в /local/js на расширения в /bitrix/js
-    if (bitrixPath != (basePath + '/local')) {
-      die('Extensions should be located in /local/js/... site folder.');
-    }
-    destPath = bitrixPath + '/js/' + tmp[1];
-    await run(node_path_bitrix('bitrix'), ['build', '--path', destPath], true);
+    if (tmp.length > 1) {
+	    if (bitrixPath != (basePath + '/local')) {
+	      die('Extensions should be located in /local/js/... site folder.');
+	    }
+	    destPath = bitrixPath + '/js/' + tmp[1];
+	    await run(node_path_bitrix('bitrix'), ['build', '--path', destPath], true);
+	}
+	else {
+		//TODO!!! ссылки для компонентов не работают - нужно копировать в local
+		//FIX for components with deps
+		await run(node_path_bitrix('bitrix'), ['build'], true);
+	}
   }
 }
 
