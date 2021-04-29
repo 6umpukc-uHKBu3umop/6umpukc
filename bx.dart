@@ -426,7 +426,11 @@ detect_site_root(path) {
     path = getcwd();
   }
   if (File(path + '/.env').existsSync()) {
-    return path;
+  	var configContent = file_get_contents(path + '/.env');
+  	if ((configContent.indexOf('SITE_URL=') >= 0)
+  			|| (configContent.indexOf('SOLUTION_GIT_REPOS=') >= 0)) {
+	  	return path;
+	}
   }
   if ((path != '') && (path != p.dirname(path))) {
     return detect_site_root(p.dirname(path));
