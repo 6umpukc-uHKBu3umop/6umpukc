@@ -1347,6 +1347,7 @@ action_site_proxy([basePath = '']) async {
     var content = "\n";
     if ((ip != '') && (ip != 'remove')) {
       content = """
+
 ProxyPreserveHost On
 ProxyPass        /  http://$ip/
 ProxyPassReverse /  http://$ip/
@@ -1356,16 +1357,21 @@ ProxyPassReverse /  http://$ip/
       r"\#bx\-proxy\s+start.+?\#bx\-proxy\s+end",
       caseSensitive: false,
       multiLine: false,
+      dotAll: true,
     );
     if (re.hasMatch(originalContent)) {
-      originalContent.replaceFirst(re, "#bx-proxy start$content#bx-proxy end");
+      originalContent = originalContent.replaceFirst(re,
+      	"#bx-proxy start$content#bx-proxy end");
     } else {
-      originalContent.replaceFirst('</VirtualHost>', "#bx-proxy start$content#bx-proxy end\n\n</VirtualHost>");
+      originalContent = originalContent.replaceFirst('</VirtualHost>',
+      	"\n#bx-proxy start$content#bx-proxy end\n\n</VirtualHost>");
     }
+
     print('');
     print('# Apache2 site config -> ' + destpath);
     print('');
     print(originalContent);
+
     var tmp = path + '/.newsiteconfig.tmp';
     file_put_contents(tmp, originalContent);
     await sudo_run('mv', [tmp, destpath]);
