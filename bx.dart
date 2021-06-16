@@ -428,16 +428,20 @@ getcwd() {
   return Directory.current.path;
 }
 
-detect_site_root(path) {
+detect_site_root(path, [checkVars = true]) {
   if (path == '') {
     path = getcwd();
   }
   if (File(path + '/.env').existsSync()) {
-    var configContent = file_get_contents(path + '/.env');
-    if ((configContent.indexOf('SITE_URL=') >= 0) ||
-        (configContent.indexOf('SOLUTION_GIT_REPOS=') >= 0)) {
-      return path;
-    }
+  	if (checkVars) {
+	    var configContent = file_get_contents(path + '/.env');
+	    if ((configContent.indexOf('SITE_URL=') >= 0) ||
+	        (configContent.indexOf('SOLUTION_GIT_REPOS=') >= 0)) {
+	      return path;
+	    }
+	} else {
+		return path;
+	}
   }
   if ((path != '') && (path != p.dirname(path))) {
     return detect_site_root(p.dirname(path));
@@ -1784,6 +1788,9 @@ action_site_init(basePath) async {
 void main(List<String> args) async {
   ARGV = args;
   var site_root = detect_site_root('');
+  if (site_root == '') {
+  	site_root = detect_site_root('', false);
+  }
   ENV_LOCAL = await load_env(site_root + '/.env');
 
   //await bitrix_minimize();
