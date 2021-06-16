@@ -177,7 +177,8 @@ is_ubuntu() async {
   if (result.exitCode != 0) {
     return false;
   }
-  return (result.stdout.indexOf('Ubuntu') >= 0) || (result.stdout.indexOf('ubuntu') >= 0);
+  return (result.stdout.indexOf('Ubuntu') >= 0) ||
+      (result.stdout.indexOf('ubuntu') >= 0);
 }
 
 is_mingw() {
@@ -215,7 +216,8 @@ runReturnContent(cmd, [args = null]) async {
     args = [];
   }
   try {
-    ProcessResult result = await Process.run(cmd, new List<String>.from(args), environment: ENV_LOCAL);
+    ProcessResult result = await Process.run(cmd, new List<String>.from(args),
+        environment: ENV_LOCAL);
     return result.stdout.trimRight();
   } catch (e) {
     print('Error on running command:');
@@ -229,8 +231,8 @@ run(cmd, args, [runInShell = false]) async {
     print(cmd + ' ' + quote_args(args));
   }
   try {
-    ProcessResult result =
-        await Process.run(cmd, new List<String>.from(args), environment: ENV_LOCAL, runInShell: runInShell);
+    ProcessResult result = await Process.run(cmd, new List<String>.from(args),
+        environment: ENV_LOCAL, runInShell: runInShell);
     var output = result.stdout.trimRight();
     if (output.length > 0) {
       print(output);
@@ -252,7 +254,8 @@ run(cmd, args, [runInShell = false]) async {
 
 // TODO check https://pub.dev/packages/process_run/install
 system(cmdLine) async {
-  return run('perl', ['-e', 'system("' + cmdLine.replaceAll('"', '\\"') + '");']);
+  return run(
+      'perl', ['-e', 'system("' + cmdLine.replaceAll('"', '\\"') + '");']);
 }
 /*
 system(cmd, args) {
@@ -392,7 +395,11 @@ load_env_file(path) async {
   final input = new File(path).openRead();
   final fields = await input
       .transform(utf8.decoder)
-      .transform(new CsvToListConverter(fieldDelimiter: '=', textDelimiter: '"', textEndDelimiter: '"', eol: "\n"))
+      .transform(new CsvToListConverter(
+          fieldDelimiter: '=',
+          textDelimiter: '"',
+          textEndDelimiter: '"',
+          eol: "\n"))
       .toList();
 
   for (final row in fields) {
@@ -426,11 +433,11 @@ detect_site_root(path) {
     path = getcwd();
   }
   if (File(path + '/.env').existsSync()) {
-  	var configContent = file_get_contents(path + '/.env');
-  	if ((configContent.indexOf('SITE_URL=') >= 0)
-  			|| (configContent.indexOf('SOLUTION_GIT_REPOS=') >= 0)) {
-	  	return path;
-	}
+    var configContent = file_get_contents(path + '/.env');
+    if ((configContent.indexOf('SITE_URL=') >= 0) ||
+        (configContent.indexOf('SOLUTION_GIT_REPOS=') >= 0)) {
+      return path;
+    }
   }
   if ((path != '') && (path != p.dirname(path))) {
     return detect_site_root(p.dirname(path));
@@ -484,7 +491,8 @@ bitrix_micromize() async {
   var contents = new Directory(dirName).listSync();
   for (var f in contents) {
     var name = p.basename(f.path);
-    if (bitrixExcludeDirs.containsKey(name) || bitrixExcludeFiles.containsKey(name)) {
+    if (bitrixExcludeDirs.containsKey(name) ||
+        bitrixExcludeFiles.containsKey(name)) {
       continue;
     }
     if (f is Directory) {
@@ -593,7 +601,10 @@ ssh_exec_remote([cmd = '']) {
     '-p',
     get_env('DEPLOY_PASSWORD'),
     'ssh',
-    get_env('DEPLOY_USER') + '@' + get_env('DEPLOY_SERVER') + get_env('DEPLOY_PORT'),
+    get_env('DEPLOY_USER') +
+        '@' +
+        get_env('DEPLOY_SERVER') +
+        get_env('DEPLOY_PORT'),
     '-t'
   ];
 
@@ -640,8 +651,12 @@ action_db(basePath) async {
     //TODO http or https from settings
     url = 'http://' + p.basename(basePath) + '/';
   }
-  url +=
-      'adminer/?username=' + get_env('DB_USER') + '&db=' + get_env('DB_NAME') + '&password=' + get_env('DB_PASSWORD');
+  url += 'adminer/?username=' +
+      get_env('DB_USER') +
+      '&db=' +
+      get_env('DB_NAME') +
+      '&password=' +
+      get_env('DB_PASSWORD');
 
   return run('xdg-open', [url]);
 }
@@ -657,7 +672,8 @@ action_ftp(basePath) async {
     //    pclose(popen("start /B " . $path . ' "' . $connStr . '" --local="' . $basePath . '"', "r"));
   } else if (await is_ubuntu()) {
     await require_command('screen');
-    return run('screen', ['-d', '-m', 'filezilla', connStr, '--local=' + basePath]);
+    return run(
+        'screen', ['-d', '-m', 'filezilla', connStr, '--local=' + basePath]);
   }
   //else {
   //	# arch - run without `screen` command
@@ -944,7 +960,8 @@ action_js_install([basePath = '']) async {
   await run(node_path_bitrix('npm'), ['install', '-g', '@bitrix/cli'], true);
 
   print('Install google-closure-compiler, esbuild ...');
-  await run(node_path('npm'), ['install', '-g', 'google-closure-compiler'], true);
+  await run(
+      node_path('npm'), ['install', '-g', 'google-closure-compiler'], true);
   // https://esbuild.github.io/getting-started/#download-a-build
   await run(node_path('npm'), ['install', '-g', 'esbuild'], true);
 }
@@ -953,7 +970,8 @@ action_solution_init(basePath) async {
   require_site_root(basePath);
 
   var solution = (ARGV.length > 1) ? ARGV[1] : '';
-  var solutionConfigPath = REAL_BIN + '/.dev/solution.env.settings/' + solution + '/example.env';
+  var solutionConfigPath =
+      REAL_BIN + '/.dev/solution.env.settings/' + solution + '/example.env';
   if (solution != '') {
     if (!File(solutionConfigPath).existsSync()) {
       die("Config for solution [$solution] not defined.");
@@ -1021,17 +1039,18 @@ action_solution_conv_utf(basePath) async {
 }
 
 action_mod_links(basePath) async {
+  //NOTE создает симлинки в local - использовать при разработке для сборки через bitrixcli с зависимостями
   require_site_root(basePath);
 
   var srcSymlinkDirs = [
     'install/js',
+    'install/components',
+    'install/templates',
     //TODO!!!
-    //'install/components',
     //'install/wizards',
     //'install/admin',
     //'install/tools',
     //'install/gadgets',
-    //'install/templates',
     //'install/services',
     //'install/css',
     //'install/themes'
@@ -1057,7 +1076,12 @@ action_mod_links(basePath) async {
         for (var v in contentsForSymlinks) {
           if (v is Directory) {
             var destSymlinkDir = dest + '/' + p.basename(v.path);
-            print('  ' + relPath + '/' + p.basename(v.path) + ' -> ' + destSymlinkDir);
+            print('  ' +
+                relPath +
+                '/' +
+                p.basename(v.path) +
+                ' -> ' +
+                destSymlinkDir);
             if (Link(destSymlinkDir).existsSync()) {
               Link(destSymlinkDir).deleteSync();
             }
@@ -1080,7 +1104,8 @@ action_mod_update([basePath = '']) async {
   var path = getcwd();
   var module = p.basename(path);
   var solutionRepos = git_repos_map();
-  var solutionUrl = solutionRepos.containsKey(module) ? solutionRepos[module][0] : '';
+  var solutionUrl =
+      solutionRepos.containsKey(module) ? solutionRepos[module][0] : '';
   var refresh = ((ARGV.length > 1) && (ARGV[1] == 'refresh')) ? ARGV[1] : '';
   return run_php([REAL_BIN + '/.action_mod_update.php', solutionUrl, refresh]);
 }
@@ -1112,7 +1137,8 @@ action_mkcert_install([basePath = '']) async {
     await sudo_run('apt', ['install', 'libnss3-tools']);
     await sudo_run('snap', ['install', 'go', '--classic']);
     await run('rm', ['-Rf', '~/bin/mkcert-src/']);
-    await run('git', ['clone', 'https://github.com/FiloSottile/mkcert ~/bin/mkcert-src']);
+    await run('git',
+        ['clone', 'https://github.com/FiloSottile/mkcert ~/bin/mkcert-src']);
     chdir('~/bin/mkcert-src/');
     await run('go', [
       'build',
@@ -1161,7 +1187,8 @@ action_bitrixcli_build([basePath = '']) async {
     await require_command('docker');
 
     var path = getcwd();
-    await run('docker', ['run', '--volume="' + path + ':/home/node"', 'bitrixcli']);
+    await run(
+        'docker', ['run', '--volume="' + path + ':/home/node"', 'bitrixcli']);
     action_fixdir(path);
   } else {
     await run(node_path_bitrix('bitrix'), ['build'], true);
@@ -1175,22 +1202,23 @@ action_bitrixcli_build_deps(basePath) async {
   var path = getcwd();
 
   var pathParts = {
-  	'/bitrix/js/': '/js/',
-  	'/install/js/': '/js/',
-  	'/local/js/': '/js/',
-  	'/bitrix/components/': '/components/',
-  	'/install/components/': '/components/',
-  	'/local/components/': '/components/',
+    '/bitrix/js/': '/js/',
+    '/install/js/': '/js/',
+    '/local/js/': '/js/',
+    '/bitrix/components/': '/components/',
+    '/install/components/': '/components/',
+    '/install/templates/': '/templates/',
+    '/local/components/': '/components/',
   };
   var tmp = [];
   var detectedPart;
   for (final part in pathParts.keys) {
-  	tmp = path.split(part);
-  	if (tmp.length != 1) {
-  		bitrixPath = basePath + '/local';
-  		detectedPart = pathParts[part];
-    	break;
-	}
+    tmp = path.split(part);
+    if (tmp.length != 1) {
+      bitrixPath = basePath + '/local';
+      detectedPart = pathParts[part];
+      break;
+    }
   }
 
   var destPath = '';
@@ -1198,19 +1226,38 @@ action_bitrixcli_build_deps(basePath) async {
     await require_command('docker');
 
     destPath = '/home/node/local/js/' + tmp[1];
-    await run('docker',
-        ['run', '--volume="' + bitrixPath + ':/home/node/local"', 'bitrixcli', 'bitrix', 'build', '--path', destPath]);
+    await run('docker', [
+      'run',
+      '--volume="' + bitrixPath + ':/home/node/local"',
+      'bitrixcli',
+      'bitrix',
+      'build',
+      '--path',
+      destPath
+    ]);
     action_fixdir(path);
   } else {
-    //TODO!!! нужно создавать символьные ссылки в /local/js на расширения в /bitrix/js
     if (bitrixPath != (basePath + '/local')) {
-		die('Extensions or component should be located in /local/... site folder.');
-	}
+      die('Extensions or component should be located in /local/... site folder.');
+    }
     if (tmp.length > 1) {
-	    destPath = bitrixPath + detectedPart + tmp[1];
-	    //TODO!!! ?если путь по destPath не существует - создавать и удалять символьную ссылку
-	    await run(node_path_bitrix('bitrix'), ['build', '--path', destPath], true);
-	}
+      destPath = bitrixPath + detectedPart + tmp[1];
+
+      var tmpSymLink = false;
+      if (!Directory(destPath).existsSync()) {
+        tmpSymLink = true;
+        Directory(p.dirname(destPath)).createSync(recursive: true);
+        Link(destPath).createSync(path);
+      }
+
+      await run(
+          node_path_bitrix('bitrix'), ['build', '--path', destPath], true);
+
+      if (tmpSymLink && Link(destPath).existsSync()) {
+        Link(destPath).deleteSync();
+        //TODO!!! удалять пустые созданные директории
+      }
+    }
   }
 }
 
@@ -1219,7 +1266,14 @@ action_bitrixcli_create([basePath = '']) async {
   if (bitrixcli_use_docker()) {
     await require_command('docker');
 
-    await run('docker', ['run', '-it', '--volume="' + path + ':/home/node"', 'bitrixcli', 'bitrix', 'create']);
+    await run('docker', [
+      'run',
+      '-it',
+      '--volume="' + path + ':/home/node"',
+      'bitrixcli',
+      'bitrix',
+      'create'
+    ]);
     action_fixdir(path);
   } else {
     //TODO!!! how to run interactive commands
@@ -1360,11 +1414,11 @@ ProxyPassReverse /  http://$ip/
       dotAll: true,
     );
     if (re.hasMatch(originalContent)) {
-      originalContent = originalContent.replaceFirst(re,
-      	"#bx-proxy start$content#bx-proxy end");
+      originalContent = originalContent.replaceFirst(
+          re, "#bx-proxy start$content#bx-proxy end");
     } else {
       originalContent = originalContent.replaceFirst('</VirtualHost>',
-      	"\n#bx-proxy start$content#bx-proxy end\n\n</VirtualHost>");
+          "\n#bx-proxy start$content#bx-proxy end\n\n</VirtualHost>");
     }
 
     print('');
@@ -1392,7 +1446,9 @@ action_es9(basePath) async {
     basePath = getcwd();
   }
   final dir = new Directory(basePath);
-  dir.list(recursive: true, followLinks: true).listen((FileSystemEntity entity) async {
+  dir
+      .list(recursive: true, followLinks: true)
+      .listen((FileSystemEntity entity) async {
     if ((entity is Directory) || skip_file(entity.path)) {
       return;
     }
@@ -1406,8 +1462,15 @@ action_es9(basePath) async {
     var destFile = f;
     var es9 = false;
     if ((type == '.es9.js') || (type == '.es6.js')) {
-      destFile = destFile.replaceAll('.es9.js', '.min.js').replaceAll('.es6.js', '.min.js');
-      extraParams = ['--language_in', 'ECMASCRIPT_2018', '--language_out', 'ECMASCRIPT5_STRICT'];
+      destFile = destFile
+          .replaceAll('.es9.js', '.min.js')
+          .replaceAll('.es6.js', '.min.js');
+      extraParams = [
+        '--language_in',
+        'ECMASCRIPT_2018',
+        '--language_out',
+        'ECMASCRIPT5_STRICT'
+      ];
       es9 = true;
     } else if ((f.substring(f.length - 3) == '.js')) {
       destFile = destFile.replaceAll('.js', '.min.js');
@@ -1421,7 +1484,8 @@ action_es9(basePath) async {
     if (es9) {
       //TODO!!! как передавать пути к модулям
       await action_conv_utf(f);
-      var res = await run(compilerPath, ['--js', f, '--js_output_file', destFile, ...extraParams]);
+      var res = await run(compilerPath,
+          ['--js', f, '--js_output_file', destFile, ...extraParams]);
       if ((res == 0) && File(destFile).existsSync()) {
         var srcFile = destFile;
         destFile = destFile.replaceAll('.min.js', '.js');
@@ -1439,12 +1503,15 @@ action_minify(basePath) async {
     basePath = getcwd();
   }
   final dir = new Directory(basePath);
-  dir.list(recursive: true, followLinks: true).listen((FileSystemEntity entity) async {
+  dir
+      .list(recursive: true, followLinks: true)
+      .listen((FileSystemEntity entity) async {
     if ((entity is Directory) || skip_file(entity.path)) {
       return;
     }
     var f = entity.path;
-    if ((f.substring(f.length - 7) == '.min.js') || (f.substring(f.length - 8) == '.min.css')) {
+    if ((f.substring(f.length - 7) == '.min.js') ||
+        (f.substring(f.length - 8) == '.min.css')) {
       return;
     }
 
@@ -1522,8 +1589,10 @@ action_lamp_install([basePath = '']) async {
     } else if (Directory('/etc/php/7.1').existsSync()) {
       phpVersion = '7.1';
     }
-    await sudo_patch_file('/etc/php/' + phpVersion + '/apache2/php.ini', phpContent);
-    await sudo_patch_file('/etc/php/' + phpVersion + '/cli/php.ini', phpContent);
+    await sudo_patch_file(
+        '/etc/php/' + phpVersion + '/apache2/php.ini', phpContent);
+    await sudo_patch_file(
+        '/etc/php/' + phpVersion + '/cli/php.ini', phpContent);
 
     var homePath = get_env('HOME');
     var extWww = homePath + '/ext_www';
@@ -1539,7 +1608,8 @@ action_lamp_install([basePath = '']) async {
     print('');
     print('# Mysql config check...');
     await sudo_run('mysqladmin', ['-p', '-u', 'root', 'version']);
-    var mysqlContent = file_get_contents(REAL_BIN + '/.template/ubuntu18.04/bitrix.my.cnf');
+    var mysqlContent =
+        file_get_contents(REAL_BIN + '/.template/ubuntu18.04/bitrix.my.cnf');
     await sudo_patch_file('/etc/mysql/my.cnf', mysqlContent);
 
     print('');
@@ -1649,11 +1719,17 @@ action_site_init(basePath) async {
       '.template/bitrix_server_test.php': 'bitrix_server_test.php',
 
       '.template/.env': '.env',
-      '.template/www_' + encoding + '/bitrix/.settings.php': 'bitrix/.settings.php',
-      '.template/www_' + encoding + '/bitrix/.settings_extra.php': 'bitrix/.settings_extra.php',
-      '.template/www_' + encoding + '/bitrix/php_interface/dbconn.php': 'bitrix/php_interface/dbconn.php',
-      '.template/www_' + encoding + '/bitrix/php_interface/after_connect.php': 'bitrix/php_interface/after_connect.php',
-      '.template/www_' + encoding + '/bitrix/php_interface/after_connect_d7.php':
+      '.template/www_' + encoding + '/bitrix/.settings.php':
+          'bitrix/.settings.php',
+      '.template/www_' + encoding + '/bitrix/.settings_extra.php':
+          'bitrix/.settings_extra.php',
+      '.template/www_' + encoding + '/bitrix/php_interface/dbconn.php':
+          'bitrix/php_interface/dbconn.php',
+      '.template/www_' + encoding + '/bitrix/php_interface/after_connect.php':
+          'bitrix/php_interface/after_connect.php',
+      '.template/www_' +
+              encoding +
+              '/bitrix/php_interface/after_connect_d7.php':
           'bitrix/php_interface/after_connect_d7.php',
     };
     var replaceIgnoredFiles = {'adminer.php': true};
@@ -1681,7 +1757,8 @@ action_site_init(basePath) async {
             .replaceAll('dbuser1', dbname)
             .replaceAll('dbpassword12345', dbpassword)
             .replaceAll('111encoding111', encoding)
-            .replaceAll('http://bitrixsolution01.example.org/', 'https://' + sitehost + '/');
+            .replaceAll('http://bitrixsolution01.example.org/',
+                'https://' + sitehost + '/');
         file_put_contents(path + '/' + wwwFiles[fname], envContent);
       }
     }
@@ -1691,7 +1768,8 @@ action_site_init(basePath) async {
   } else if (is_mingw()) {
     var wwwFiles = {
       '.template/.env': '.env',
-      '.template/sublime-text/bitrix-solution-example.sublime-project': 'solution.sublime-project',
+      '.template/sublime-text/bitrix-solution-example.sublime-project':
+          'solution.sublime-project',
     };
     for (final fname in wwwFiles.keys) {
       var destPath = path + '/' + wwwFiles[fname];
