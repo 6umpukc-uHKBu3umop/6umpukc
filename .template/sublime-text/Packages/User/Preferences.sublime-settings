@@ -33,6 +33,7 @@
 	"sublime_merge_path": "/snap/bin/sublime-merge",
 	"theme": "ayu-mirage.sublime-theme",
 	"trim_trailing_white_space_on_save": true,
+	"show_encoding": true,
 	"update_check": false
 }
 
