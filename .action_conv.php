@@ -197,7 +197,7 @@ function HandleModPackAction()
 switch ($_SERVER['argv'][1])
 {
 	case 'utf':
-		(empty($_SERVER['argv'][2]) || !file_exists($_SERVER['argv'][2]))?
+		(empty($_SERVER['argv'][2]) || !file_exists($_SERVER['argv'][2]) || is_dir($_SERVER['argv'][2]))?
 			HandleConvUtfAction() : HandleConvUtfFileAction($_SERVER['argv'][2]);
 		break;
 	case 'win':
